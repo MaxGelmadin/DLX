@@ -11,14 +11,17 @@ import java.util.LinkedList;
 public class DancingList {
 
     // Fields
+    private static int solutionNum;
+
     private ColumnNode head;
     private LinkedList<DancingNode> solution;
-    private int solutionNum;
+    private SolutionHandler solutionHandler;
+
 
     // Constructor
-    public DancingList(int[][] grind) {
+    public DancingList(int[][] grind, SolutionHandler h) {
         solutionNum = 0;
-        final int ROWS = grind.length;
+        solutionHandler = h;
         final int COLS = grind[0].length;
         ArrayList<ColumnNode> colList = new ArrayList<>();
         solution = new LinkedList<>();
@@ -60,7 +63,7 @@ public class DancingList {
 
     /**
      * Chooses column to cover.
-     * The column with minimum number of 1s will be chosen and returned.
+     * The column with minimum number of 1's will be chosen and returned.
      * If the all columns are covered, the head of the list will be returned instead.
      *
      * @return column
@@ -79,11 +82,8 @@ public class DancingList {
 
     // This one finds the solutions in the given matrix.
     private void search(int k) {
-        if (head.R == head) {                                                       // Solution is find
-            solutionNum++;
-            System.out.println("Printing solution number: " + solutionNum);
-            printSolution();
-            System.out.println("-------------------------------------------");
+        if (head.R == head) {
+            solutionHandler.handleSolutionList(solution);                           // Solution is found
         }
         else {
             ColumnNode currColumn = chooseColumn();                                 // Choose next column to cover. The column with minimum number of 1's is chosen
@@ -104,21 +104,15 @@ public class DancingList {
         }
     }
 
-    private void printSolution() {
-        for (DancingNode node : solution) {
-            StringBuilder sol = new StringBuilder(node.C.name);
-            DancingNode temp = node.R;
-            while (temp != node) {
-                sol.append(" ").append(temp.C.name);
-                temp = temp.R;
-            }
-            System.out.println(sol);
-        }
-    }
-
-    public void printSolutions() {
+    public void run() {
         search(0);
     }
 
+    public static int getSolutionNum() {
+        return solutionNum;
+    }
 
+    public static void increment() {
+        solutionNum++;
+    }
 }
