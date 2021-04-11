@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Arrays;
 
 public class Sudoku {
 
@@ -9,8 +10,8 @@ public class Sudoku {
     private final int MAX_VAL;
     private final int LIMIT;
     private int DELTA;
-    private int[][] grind;
-    private byte[][] sudokuGrind;
+    private int[][] sudokuGrind;
+    private byte[][] exactCoverGrind;
 
     public Sudoku(int N, String level) {
         this.N = N;
@@ -18,18 +19,45 @@ public class Sudoku {
         LIMIT = MAX_VAL * MAX_VAL;
         DELTA =  0;
 
-        sudokuGrind = new byte[N * N][N * N];
+        sudokuGrind = new int[N * N][N * N];
         BufferedReader buff;
         try {
             buff = new BufferedReader(new FileReader("levels/" + level));
-            //parseBoard(buff);
+            parseBoard(buff);
         } catch (FileNotFoundException ex) {
             System.out.println("File " + level + " was not found. Terminating...");
             System.exit(0);
         }
-
-        createExactCoverBoard();
+        exactCoverGrind = createExactCoverBoard();
+        finalizeGrind();
     }
+
+    /**
+     * Travers over the given parsed Sudoku board. If cell contains '0', we do nothing.
+     * Otherwise, this cell contains a number in [1, N^2], thus we must force the DLX to include this column in
+     * the final solution.
+     * <p>
+     *     In order to do this we use {@getIndex(int; int; int)} to find what is the position of the number.
+     *     Then, we fill with zero's all N^2 lines in the so the column that contains the specific number will be
+     *     the only column that contains 1.
+     *     This way, we will force the DLX to choose this number.
+     * </p>
+     */
+    private void finalizeGrind() {
+        for (int i = 0; i < sudokuGrind.length; i++) {
+            for (int j = 0; j < sudokuGrind[0].length; j++) {
+                int number = sudokuGrind[i][j];
+                if (number != 0) {
+                    //int coverGrindIndex = getIndex(i, j, number);
+                    for (int k = 1; k <= MAX_VAL; k++) {
+                        if (k != number)
+                            Arrays.fill(exactCoverGrind[getIndex(i, j, k)], (byte) 0);
+                    }
+                }
+            }
+        }
+    }
+
 
     private void parseBoard(BufferedReader buff) {
             try {
@@ -54,10 +82,15 @@ public class Sudoku {
         }
 
     private int getIndex(int row, int column, int num) {
-        return (row - 1) * N * N + (column - 1) * N + (num - 1);
+        return row * MAX_VAL * MAX_VAL + column * MAX_VAL + (num - 1);
     }
 
-    private byte[][] createExactCoverBoard() {
+    /**
+     * Here we build the Sudoku constraints.
+     * Better visualized here: <a href="https://www.stolaf.edu//people/hansonr/sudoku/exactcovermatrix.htm">https://www.stolaf.edu//people/hansonr/sudoku/exactcovermatrix.htm</a>
+     *
+     */
+   private byte[][] createExactCoverBoard() {
         byte[][] coverBoard = new byte
                 [N * N * (MAX_VAL * MAX_VAL)]
                 [N * N * MAX_VAL * 4];
@@ -85,7 +118,7 @@ public class Sudoku {
             }
             offsetR = 0;
         }
-        
+
         DELTA = DELTA + LIMIT;
 
 
@@ -119,18 +152,12 @@ public class Sudoku {
                 }
         }
 
-//
-//        for (i=0;i<coverBoard.length;i++) {
-//            for (j = 243; j < coverBoard[0].length; j++) {
-//                if(coverBoard[i][j] == 1) {
-//                    System.out.print(1 + " ");
-//                }
-//                else
-//                    System.out.print(" ");
-//            }
-//            System.out.println();
-//        }
-
         return coverBoard;
+    }
+
+    public void run() {
+        //DancingList lst = new DancingList(exactCoverGrind, new PrintSolutionHandler());
+        DancingList lst = new DancingList(exactCoverGrind, new SudokuSolutionHandler());
+        lst.run();
     }
 }

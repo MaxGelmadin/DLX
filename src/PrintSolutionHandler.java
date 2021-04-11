@@ -2,7 +2,7 @@ import java.util.List;
 
 public class PrintSolutionHandler implements SolutionHandler {
     @Override
-    public void handleSolutionList(List<DancingNode> solution) {
+    public void handleSolution(List<DancingNode> solution) {
         DancingList.increment();
         System.out.println("Printing solution number: " + DancingList.getSolutionNum());
         printSolution(solution);

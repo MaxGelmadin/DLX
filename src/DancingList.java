@@ -1,13 +1,13 @@
 import java.util.ArrayList;
 import java.util.LinkedList;
 
+
 /**
  * This is an implementation of Donald Knuth's Algorithm-X which can be used to solve
  * the 'Exact Cover Problem' or different problems that can be reduced to this problem.
- * @see <a href="https://www.ocf.berkeley.edu/~jchu/publicportal/sudoku/0011047.pdf">https://www.ocf.berkeley.edu/~jchu/publicportal/sudoku/0011047.pdf</a>
+ * @see <a href="https://www.ocf.berkeley.edu/~jchu/publicportal/sudoku/0011047.pdf">Donald Knuth's PDF paper</a>
  *
  */
-
 public class DancingList {
 
     // Fields
@@ -19,7 +19,7 @@ public class DancingList {
 
 
     // Constructor
-    public DancingList(int[][] grind, SolutionHandler h) {
+    public DancingList(byte[][] grind, SolutionHandler h) {
         solutionNum = 0;
         solutionHandler = h;
         final int COLS = grind[0].length;
@@ -37,7 +37,7 @@ public class DancingList {
         }
         temp.hookRight(head);
 
-        for (int[] ints : grind) {
+        for (byte[] ints : grind) {
             DancingNode prev = null;
             DancingNode first = null;
             for (int j = 0; j < COLS; j++) {
@@ -83,7 +83,7 @@ public class DancingList {
     // This one finds the solutions in the given matrix.
     private void search(int k) {
         if (head.R == head) {
-            solutionHandler.handleSolutionList(solution);                           // Solution is found
+            solutionHandler.handleSolution(solution);                               // Solution is found
         }
         else {
             ColumnNode currColumn = chooseColumn();                                 // Choose next column to cover. The column with minimum number of 1's is chosen
