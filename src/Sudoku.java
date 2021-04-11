@@ -22,7 +22,7 @@ public class Sudoku {
         BufferedReader buff;
         try {
             buff = new BufferedReader(new FileReader("levels/" + level));
-            parseBoard(buff);
+            //parseBoard(buff);
         } catch (FileNotFoundException ex) {
             System.out.println("File " + level + " was not found. Terminating...");
             System.exit(0);
@@ -39,7 +39,7 @@ public class Sudoku {
                     if (c == '\r' | c == '\n') {
                         continue;
                     }
-                    sudokuGrind[position / 9][position % 9] = (byte) (c == '.' ? 0 : c - '0');
+                    sudokuGrind[position / MAX_VAL][position % MAX_VAL] = (byte) (c == '.' ? 0 : c - '0');
                     position++;
                 }
             } catch (IOException ex) {
@@ -62,6 +62,7 @@ public class Sudoku {
                 [N * N * (MAX_VAL * MAX_VAL)]
                 [N * N * MAX_VAL * 4];
 
+
         // Cell constraints. Each cell contains only one integer in [1, MAX_VAL]
         int offsetR = 0, offsetC = 0;
         for (int j = DELTA; j < LIMIT + DELTA; j++) {
@@ -74,6 +75,7 @@ public class Sudoku {
         offsetR = 0;
         DELTA = DELTA + LIMIT;
 
+
         // Row constraints. An integer must be present exactly one time in a row.
         for (int i = 0; i < coverBoard.length; i += MAX_VAL) {
             offsetC = ((i % LIMIT == 0) && i != 0) ?  (offsetC + MAX_VAL) : offsetC;
@@ -83,12 +85,11 @@ public class Sudoku {
             }
             offsetR = 0;
         }
-        offsetC = 0;
+        
         DELTA = DELTA + LIMIT;
 
+
         // Column constraints. An integer must be present exactly one time in a row.
-
-
         for (int i = 0; i < coverBoard.length; i += LIMIT) {
             offsetR = 0;
             for (int j = DELTA; j < DELTA + LIMIT; j++) {
@@ -97,18 +98,38 @@ public class Sudoku {
             }
         }
 
-        offsetR = 0;
         DELTA = DELTA + LIMIT;
 
-        // Box constraints. Every integer in [0, MAX_VAL] must be present in a box of size N * N.
-        for (int i = 0; i < coverBoard.length; i += MAX_VAL * MAX_VAL * MAX_VAL) {
-//            for (int j = DELTA; j < DELTA + MAX_VAL; j++) {
-//                coverBoard[i + offsetR][j + offsetC] = 1;
-//
-//            }
-            int currBox = 0;
 
+        // Box constraints. Every integer in [0, MAX_VAL] must be present in a box of size N * N.
+        // It's pretty weird - I looked for a pattern here, and the bellow solution is what I came up with.
+        int i = 0, j = DELTA, counter = 0;
+        while (i < coverBoard.length & j < coverBoard[0].length) {
+            coverBoard[i][j] = 1;
+            i++;
+            j++;
+            if (i % (MAX_VAL * MAX_VAL) == 0) {
+                counter++;
+                if (counter % N != 0)
+                    j -= N * MAX_VAL;
+            }
+            else if (j % MAX_VAL == 0) {
+                    if (i % (MAX_VAL * N) != 0)
+                        j -= MAX_VAL;
+                }
         }
+
+//
+//        for (i=0;i<coverBoard.length;i++) {
+//            for (j = 243; j < coverBoard[0].length; j++) {
+//                if(coverBoard[i][j] == 1) {
+//                    System.out.print(1 + " ");
+//                }
+//                else
+//                    System.out.print(" ");
+//            }
+//            System.out.println();
+//        }
 
         return coverBoard;
     }
